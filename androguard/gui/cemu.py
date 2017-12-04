@@ -1,12 +1,15 @@
+from builtins import object
 from PyQt5 import QtGui
 
-from androguard.core import androconf
+import logging
+log = logging.getLogger("androguard.gui")
+
 
 class Cursor(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        
+
     def move(self, dx, dy):
         self.x += dx
         self.y += dy
@@ -18,13 +21,15 @@ class Cursor(object):
     def getPosition(self):
         return self.x, self.y
 
+
 def enum(**enums):
     return type('Enum', (), enums)
+
 
 Directions = enum(Left=1, Right=2, Up=3, Down=4, End=5, Home=6, CtrlEnd=7, CtrlHome=8)
 
 
-class ConsoleEmulator():
+class ConsoleEmulator(object):
     def __init__(self, qp, rows, cols):
         self.qp = qp
         self._x = 0
@@ -33,7 +38,7 @@ class ConsoleEmulator():
         self._cols = cols
 
         fm = QtGui.QFontMetrics(self.qp.font())
-        self.fontWidth  = fm.width('a')
+        self.fontWidth = fm.width('a')
         self.fontHeight = fm.height()
 
     def incrementPosition(self):
@@ -42,7 +47,6 @@ class ConsoleEmulator():
         else:
             self._x = 0
             self._y += 1
-
 
     def newLine(self):
         self.LF()
@@ -57,11 +61,11 @@ class ConsoleEmulator():
 
     def _validatePosition(self, x, y):
         if x >= self._cols:
-            androconf.warning("x > cols")
+            log.warning("x > cols")
             return False
 
         if y >= self._rows:
-            androconf.warning("y > rows")
+            log.warning("y > rows")
             return False
         return True
 
@@ -73,7 +77,7 @@ class ConsoleEmulator():
                     self.qp.setBackgroundMode(0)
 
                 self.qp.drawText(self._x * self.fontWidth, self.fontHeight + self._y * self.fontHeight, c)
-                self.incrementPosition()        
+                self.incrementPosition()
         self.qp.setBackgroundMode(background)
 
     def write_c(self, c, noBackgroudOnSpaces=False):
@@ -83,11 +87,11 @@ class ConsoleEmulator():
                 self.qp.setBackgroundMode(0)
 
             self.qp.drawText(self._x * self.fontWidth, self.fontHeight + self._y * self.fontHeight, c)
-            self.incrementPosition()        
+            self.incrementPosition()
         self.qp.setBackgroundMode(background)
 
     def getXY(self):
-        return (self._x, self._y)
+        return self._x, self._y
 
     def writeAt(self, x, y, s, noBackgroudOnSpaces=False):
         self.gotoXY(x, y)
@@ -98,7 +102,7 @@ class ConsoleEmulator():
         self.write_c(c, noBackgroudOnSpaces)
 
     def writeLn(self):
-        if True:#self._validatePosition(self._x, self._y):
+        if True:  # self._validatePosition(self._x, self._y):
             self._y += 1
             self._x = 0
 

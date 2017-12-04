@@ -1,13 +1,12 @@
-#!/usr/bin/env python2
-'''Androguard Gui'''
+#!/usr/bin/env python
+"""Androguard Gui"""
+from __future__ import print_function
 
 import argparse
+import os
 import sys
 
 from androguard.core import androconf
-from androguard.gui.mainwindow import MainWindow
-
-from PyQt5 import QtWidgets, QtGui
 
 
 if __name__ == '__main__':
@@ -18,8 +17,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.debug:
-        androconf.set_debug()
+    # Load pyqt5 after argument processing, so we can collect the arguments
+    # on a system without PyQT5.
+    try:
+        from PyQt5 import QtWidgets, QtGui
+        from androguard.gui.mainwindow import MainWindow
+    except ModuleNotFoundError:
+        print("No PyQT5 found! Exiting...", file=sys.stderr)
+        sys.exit(1)
 
     # We need that to save huge sessions when leaving and avoid
     # RuntimeError: maximum recursion depth exceeded while pickling an object
@@ -29,7 +34,7 @@ if __name__ == '__main__':
     sys.setrecursionlimit(50000)
 
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon("./androguard/gui/androguard.ico"))
+    app.setWindowIcon(QtGui.QIcon(os.path.join(androconf.CONF['data_prefix'], "androguard.ico")))
 
     window = MainWindow(input_file=args.input_file,
                         input_plugin=args.input_plugin)
